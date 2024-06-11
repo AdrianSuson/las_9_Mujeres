@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Box } from "@mui/material";
+import { Box, CircularProgress, Typography } from "@mui/material";
 import { Pie } from "@nivo/pie";
 import axios from "axios";
 import config from "../../state/config";
@@ -10,6 +10,7 @@ const DailyChartComponent = ({
   expensesData,
   selectedYear,
   selectedMonth,
+  isLoading,
 }) => {
   const sortedSalesData = salesData.sort(
     (a, b) => new Date(a.transaction_date) - new Date(b.transaction_date)
@@ -62,6 +63,8 @@ const DailyChartComponent = ({
     { id: "Income", value: totalIncome },
   ];
 
+  const isNoData = chartData.every((data) => data.value === 0);
+
   return (
     <Box
       height="400px"
@@ -81,31 +84,39 @@ const DailyChartComponent = ({
         },
       }}
     >
-      <Pie
-        width={400}
-        height={400}
-        data={chartData}
-        margin={{ top: 90, right: 90, bottom: 90, left: 90 }}
-        innerRadius={0.5}
-        padAngle={0.7}
-        cornerRadius={3} 
-        colors={["#2196f3", "#f44336", "#4caf50"]}
-        borderWidth={1}
-        borderColor={{ from: "color", modifiers: [["darker", 0.2]] }}
-        radialLabelsSkipAngle={10}
-        radialLabelsTextXOffset={6}
-        radialLabelsTextColor="#333333"
-        radialLabelsLinkOffset={0}
-        radialLabelsLinkDiagonalLength={16}
-        radialLabelsLinkHorizontalLength={24}
-        radialLabelsLinkStrokeWidth={1}
-        radialLabelsLinkColor={{ from: "color" }}
-        slicesLabelsSkipAngle={10}
-        slicesLabelsTextColor="#333333"
-        animate={true}
-        motionStiffness={90}
-        motionDamping={15}
-      />
+      {isLoading ? (
+        <CircularProgress />
+      ) : isNoData ? (
+        <Typography variant="h6" color="textSecondary">
+          No financial data available for {selectedMonth} - {selectedYear}.
+        </Typography>
+      ) : (
+        <Pie
+          width={400}
+          height={400}
+          data={chartData}
+          margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
+          innerRadius={0.5}
+          padAngle={0.7}
+          cornerRadius={3} 
+          colors={["#2196f3", "#f44336", "#4caf50"]}
+          borderWidth={1}
+          borderColor={{ from: "color", modifiers: [["darker", 0.2]] }}
+          radialLabelsSkipAngle={10}
+          radialLabelsTextXOffset={6}
+          radialLabelsTextColor="#333333"
+          radialLabelsLinkOffset={0}
+          radialLabelsLinkDiagonalLength={16}
+          radialLabelsLinkHorizontalLength={24}
+          radialLabelsLinkStrokeWidth={1}
+          radialLabelsLinkColor={{ from: "color" }}
+          slicesLabelsSkipAngle={10}
+          slicesLabelsTextColor="#333333"
+          animate={true}
+          motionStiffness={90}
+          motionDamping={15}
+        />
+      )}
     </Box>
   );
 };
@@ -113,12 +124,14 @@ const DailyChartComponent = ({
 const PieCharts = () => {
   const [salesData, setSalesData] = useState([]);
   const [expensesData, setExpensesData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       try {
         const salesResponse = await axios.get(
           `${config.API_URL}/sales?year=${currentYear}&month=${currentMonth}`
@@ -131,6 +144,8 @@ const PieCharts = () => {
         setExpensesData(expensesResponse.data);
       } catch (error) {
         console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -144,6 +159,7 @@ const PieCharts = () => {
         expensesData={expensesData}
         selectedYear={currentYear}
         selectedMonth={currentMonth}
+        isLoading={isLoading}
       />
     </Box>
   );
@@ -152,14 +168,14 @@ const PieCharts = () => {
 DailyChartComponent.propTypes = {
   salesData: PropTypes.array.isRequired, 
   expensesData: PropTypes.array.isRequired, 
-  selectedYear: PropTypes.number, 
-  selectedMonth: PropTypes.number, 
-  isNonMediumScreens: PropTypes.bool, 
+  selectedYear: PropTypes.number.isRequired, 
+  selectedMonth: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired, 
+  isLoading: PropTypes.bool.isRequired,
 };
+
 PieCharts.propTypes = {
   currentYear: PropTypes.number, 
   currentMonth: PropTypes.number,
 };
-
 
 export default PieCharts;

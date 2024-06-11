@@ -10,8 +10,6 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import PropTypes from "prop-types";
-
 import {
   ChevronLeft,
   ChevronRightOutlined,
@@ -21,10 +19,12 @@ import {
   AdminPanelSettingsOutlined,
   PieChartOutlined,
 } from "@mui/icons-material";
-import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import MoneyOffIcon from "@mui/icons-material/MoneyOff";
-import WarehouseOutlinedIcon from "@mui/icons-material/WarehouseOutlined";
+import PropTypes from 'prop-types';
+import Icon from '@mdi/react';
+import { mdiCash } from '@mdi/js';
+import { mdiCashOff } from '@mdi/js';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import WarehouseOutlinedIcon from '@mui/icons-material/WarehouseOutlined';
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import FlexBetween from "./FlexBetween";
@@ -41,11 +41,11 @@ const navItems = [
   },
   {
     text: "Sales",
-    icon: <AttachMoneyIcon />,
+    icon: <Icon path={mdiCash} size={1} />,
   },
   {
     text: "Expenses",
-    icon: <MoneyOffIcon />,
+    icon: <Icon path={mdiCashOff} size={1} />,
   },
   {
     text: "Income",
@@ -79,6 +79,7 @@ const navItems = [
     text: "Products",
     icon: <WarehouseOutlinedIcon />,
   },
+
 ];
 
 const Sidebar = ({
@@ -145,7 +146,7 @@ const Sidebar = ({
                     </Typography>
                   );
                 }
-                const lcText = text.toLowerCase().replace(/\s+/g, "-");
+                const lcText = text.toLowerCase().replace(/\s+/g, '-');
 
                 return (
                   <ListItem key={text} disablePadding>
@@ -193,10 +194,11 @@ const Sidebar = ({
 };
 
 Sidebar.propTypes = {
-  drawerWidth: PropTypes.string.isRequired, 
-  isSidebarOpen: PropTypes.bool.isRequired, 
-  setIsSidebarOpen: PropTypes.func.isRequired, 
+  drawerWidth: PropTypes.number.isRequired,
+  isSidebarOpen: PropTypes.bool.isRequired,
+  setIsSidebarOpen: PropTypes.func.isRequired,
   isNonMobile: PropTypes.bool.isRequired,
 };
+
 
 export default Sidebar;

@@ -9,25 +9,32 @@ import {
 } from "@mui/material";
 import { Formik } from "formik";
 import { PublishOutlined as PublishOutlinedIcon } from "@mui/icons-material";
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 import config from "../../state/config";
 
-
-const EmployeeUpdateDialog = ({ open, onClose, employeeId, initialData, fetchEmployees }) => {
-
+const EmployeeUpdateDialog = ({
+  open,
+  onClose,
+  employeeId,
+  initialData,
+  fetchEmployees,
+}) => {
   const handleUpdate = async (values, { setSubmitting, resetForm }) => {
     try {
-      const response = await fetch(`${config.API_URL}/employees/${employeeId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      });
+      const response = await fetch(
+        `${config.API_URL}/employees/${employeeId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
+        }
+      );
       if (!response.ok) {
-        throw new Error('Failed to update employee.');
+        throw new Error("Failed to update employee.");
       }
-      alert('Employee updated successfully!');
+      alert("Employee updated successfully!");
       resetForm();
       onClose(); // Optionally refresh the employee list if applicable
       if (fetchEmployees) {
@@ -35,7 +42,7 @@ const EmployeeUpdateDialog = ({ open, onClose, employeeId, initialData, fetchEmp
       }
     } catch (error) {
       console.error(`Error updating employee with ID ${employeeId}:`, error);
-      alert('Failed to update employee.');
+      alert("Failed to update employee.");
     } finally {
       setSubmitting(false);
     }
@@ -55,7 +62,7 @@ const EmployeeUpdateDialog = ({ open, onClose, employeeId, initialData, fetchEmp
         <Formik
           initialValues={initialValues}
           onSubmit={handleUpdate}
-          enableReinitialize  // Ensure form reinitializes with new initialData
+          enableReinitialize // Ensure form reinitializes with new initialData
         >
           {({ values, handleChange, handleSubmit, isSubmitting }) => (
             <form onSubmit={handleSubmit}>
@@ -111,12 +118,6 @@ const EmployeeUpdateDialog = ({ open, onClose, employeeId, initialData, fetchEmp
                   startIcon={<PublishOutlinedIcon />}
                 >
                   Update
-                </Button>
-                <Button
-                  onClick={onClose}
-                  color="secondary"
-                >
-                  Close
                 </Button>
               </DialogActions>
             </form>

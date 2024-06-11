@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Box,
   Button,
@@ -12,40 +12,38 @@ import {
   ListItem,
   List,
   CircularProgress,
-} from '@mui/material';
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
   IconButton,
-  DialogActions,
-} from '@mui/material';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import Header from '../../components/Header';
-import CloseIcon from '@mui/icons-material/Close';
-import Item from './PosCard';
-import config from '../../state/config';
+  InputAdornment,
+} from "@mui/material";
+import Header from "../../components/Header";
+import CloseIcon from "@mui/icons-material/Close";
+import SearchIcon from "@mui/icons-material/Search";
+import Item from "./PosCard";
+import config from "../../state/config";
 
 const POS = () => {
   const [items, setItems] = useState([]);
   const [cart, setCart] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [cartOpen, setCartOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [moneyGiven, setMoneyGiven] = useState("");
+  const [change, setChange] = useState(null);
   const theme = useTheme();
-
-  const toggleCartDialog = () => {
-    setCartOpen(!cartOpen);
-  };
 
   useEffect(() => {
     const fetchItems = async () => {
       try {
         setIsLoading(true);
         const response = await axios.get(`${config.API_URL}/items`);
-        setItems(response.data.map((item) => ({ ...item, quantity: 1 })));
+        setItems(
+          response.data.map((item) => ({
+            ...item,
+            quantity: 1,
+            price: parseFloat(item.price),
+          }))
+        );
       } catch (error) {
-        console.error('Error fetching items data:', error);
+        console.error("Error fetching items data:", error);
       } finally {
         setIsLoading(false);
       }
@@ -54,22 +52,17 @@ const POS = () => {
   }, []);
 
   const addOrder = (itemToAdd) => {
-    // Find the index of the item in the items array
     const itemIndex = items.findIndex((item) => item.id === itemToAdd.id);
 
-    // Check if the item exists and there is enough stock
     if (itemIndex !== -1 && items[itemIndex].amount >= itemToAdd.quantity) {
-      // Update the item amount in the items state to reflect the decrease
       const updatedItems = [...items];
       updatedItems[itemIndex] = {
         ...updatedItems[itemIndex],
         amount: updatedItems[itemIndex].amount - itemToAdd.quantity,
       };
 
-      // Update the items state with the new item amounts
       setItems(updatedItems);
 
-      // Update the cart to include the added item or update the quantity
       setCart((prevCart) => {
         const existingCartItemIndex = prevCart.findIndex(
           (item) => item.id === itemToAdd.id
@@ -77,7 +70,6 @@ const POS = () => {
         const newCart = [...prevCart];
 
         if (existingCartItemIndex >= 0) {
-          // If the item already exists in the cart, update its quantity
           const newQuantity =
             newCart[existingCartItemIndex].quantity + itemToAdd.quantity;
           newCart[existingCartItemIndex] = {
@@ -85,15 +77,13 @@ const POS = () => {
             quantity: newQuantity,
           };
         } else {
-          // If the item is not in the cart, add it with its quantity
           newCart.push({ ...itemToAdd, quantity: itemToAdd.quantity });
         }
 
         return newCart;
       });
     } else {
-      // If there is not enough stock, alert the user
-      alert('Not enough stock');
+      alert("Not enough stock");
     }
   };
 
@@ -102,9 +92,8 @@ const POS = () => {
       const existingItemIndex = currentCart.findIndex(
         (item) => item.id === itemId
       );
-      if (existingItemIndex === -1) return currentCart; // Item not found in cart, do nothing
+      if (existingItemIndex === -1) return currentCart;
 
-      // Increment item amount in items state
       const itemInItemsIndex = items.findIndex((item) => item.id === itemId);
       if (itemInItemsIndex !== -1) {
         const updatedItems = [...items];
@@ -117,7 +106,6 @@ const POS = () => {
         setItems(updatedItems);
       }
 
-      // Remove or decrement quantity in cart
       if (currentCart[existingItemIndex].quantity === 1) {
         return currentCart.filter((item) => item.id !== itemId);
       } else {
@@ -129,13 +117,13 @@ const POS = () => {
   };
 
   const processSale = async () => {
-    const transactionName = 'POS Sale - ' + new Date().toLocaleDateString();
+    const transactionName = "POS Sale - " + new Date().toLocaleDateString();
     const saleRecords = cart.map((item) => ({
       transaction_name: transactionName,
       sales_name: item.name,
       amount: item.quantity,
       price: item.price,
-      transaction_date: new Date().toISOString().split('T')[0],
+      transaction_date: new Date().toISOString().split("T")[0],
       total_sales: (item.price * item.quantity).toFixed(2),
       itemId: item.id,
       quantity: item.quantity,
@@ -154,13 +142,25 @@ const POS = () => {
           })
         )
       );
-      alert('Sale processed successfully!');
+      alert("Sale processed successfully!");
       setCart([]);
-      toggleCartDialog();
       window.location.reload(false);
     } catch (error) {
-      console.error('Error processing sale:', error);
-      alert('Failed to process sale.');
+      console.error("Error processing sale:", error);
+      alert("Failed to process sale.");
+    }
+  };
+
+  const handleMoneyGivenChange = (event) => {
+    const value = event.target.value;
+    setMoneyGiven(value);
+    const parsedValue = parseFloat(value);
+    if (!isNaN(parsedValue)) {
+      const totalAmount = parseFloat(total);
+      const changeAmount = parsedValue - totalAmount;
+      setChange(changeAmount >= 0 ? changeAmount.toFixed(2) : null);
+    } else {
+      setChange(null);
     }
   };
 
@@ -186,104 +186,100 @@ const POS = () => {
   }
 
   return (
-    <Box m="1.5rem 2.5rem" width="100%">
-      <Header title="Kiosk" subtitle="" />
-      <Box
-        sx={{
-          marginRight: '15px',
-          display: 'flex',
-          justifyContent: 'flex-end',
-        }}
-      >
-        <Button
-          variant="contained"
-          startIcon={<ShoppingCartIcon />}
-          onClick={toggleCartDialog}
-          sx={{
-            mb: 2,
-            color: theme.palette.primary[500],
-            background: theme.palette.secondary[500],
-            transition: 'transform 0.2s',
-            '&:hover': {
-              color: theme.palette.secondary[600],
-              background: theme.palette.primary[600],
-              transform: 'scale(1.1)',
-            },
-          }}
+    <Box m="1.5rem 2.5rem" width="100%" display="flex">
+      <Box flex="1">
+        <Header title="Point of Sale" subtitle="" />
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          sx={{ mb: 2 }}
         >
-          Item List
-        </Button>
-      </Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center">
-        <TextField
-          label="Search Items"
-          variant="outlined"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          sx={{ marginLeft: '15px', mb: 2, flexGrow: 1, mr: 2 }}
-        />
+          <TextField
+            label="Search Items"
+            variant="outlined"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            sx={{ flexGrow: 1, marginRight: "15px" }}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
+
+        <Grid container spacing={2}>
+          {filteredItems.map((item) => (
+            <Grid item xs={12} sm={6} md={2.4} key={item.id}>
+              <Item item={item} addToCart={addOrder} cart={cart} />
+            </Grid>
+          ))}
+        </Grid>
       </Box>
 
-      <Dialog
-        open={cartOpen}
-        onClose={toggleCartDialog}
-        fullWidth
-        maxWidth="sm"
+      <Box
+        sx={{
+          width: 300,
+          boxSizing: "border-box",
+          padding: theme.spacing(2),
+          borderLeft: `1px solid ${theme.palette.divider}`,
+          overflowY: "auto",
+        }}
       >
-        <DialogTitle>
-          Cart
-          <IconButton
-            onClick={toggleCartDialog}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              borderRadius: theme.shape.borderRadius,
-              '&:hover': {
-                boxShadow: theme.shadows[6],
-              },
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent dividers>
-          <List>
-            {cart.map((item, index) => (
-              <ListItem key={index} divider>
-                <ListItemText
-                  primary={`${item.name} x ${item.quantity}`}
-                  secondary={`$${item.price.toFixed(2)} each`}
-                />
-                <IconButton
-                  edge="end"
-                  onClick={() => removeFromCart(item.id)}
-                >
-                  <CloseIcon />
-                </IconButton>
-              </ListItem>
-            ))}
-          </List>
-          <Typography variant="h6">Total: ${total}</Typography>
-        </DialogContent>
-        <DialogActions>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="h6">List</Typography>
+        </Box>
+        <List>
+          {cart.map((item, index) => (
+            <ListItem key={index} divider>
+              <ListItemText
+                primary={`${item.name} x ${item.quantity}`}
+                secondary={`₱${item.price.toFixed(2)} each`}
+              />
+              <IconButton edge="end" onClick={() => removeFromCart(item.id)}>
+                <CloseIcon />
+              </IconButton>
+            </ListItem>
+          ))}
+        </List>
+        <Box
+          sx={{
+            position: "fixed",
+            bottom: 0,
+            width: 300,
+            padding: theme.spacing(2),
+            borderTop: `1px solid ${theme.palette.divider}`,
+            zIndex: theme.zIndex.drawer + 1,
+          }}
+        >
+          <Typography variant="h6">Total: ₱{total}</Typography>
+          <TextField
+            label="Money Given"
+            variant="outlined"
+            value={moneyGiven}
+            onChange={handleMoneyGivenChange}
+            type="number"
+            fullWidth
+            sx={{ mt: 2 }}
+          />
+
+          <Typography variant="h6" sx={{ mt: 2 }}>
+            Change: ₱{change}
+          </Typography>
           <Button
             onClick={processSale}
             variant="contained"
             color="primary"
+            fullWidth
+            sx={{ mt: 2 }}
           >
-            Checkout
+            Done
           </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Grid container spacing={2}>
-        {filteredItems.map((item) => (
-          <Grid item xs={12} sm={6} md={2.4} key={item.id}>
-            <Item item={item} addToCart={addOrder} cart={cart} />
-          </Grid>
-        ))}
-      </Grid>
+        </Box>
+      </Box>
     </Box>
   );
 };

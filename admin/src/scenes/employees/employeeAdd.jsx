@@ -121,10 +121,7 @@ const EmployeeAdd = ({ onClose }) => {
                 <Button
                   type="submit"
                   variant="contained"
-                  sx={{
-                    color: theme.palette.primary[400],
-                    background: theme.palette.secondary[400],
-                  }}
+                  color="primary"
                 >
                   <Typography mr="0.3rem">Save</Typography>
                   <PersonAddIcon />

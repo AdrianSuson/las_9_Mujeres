@@ -12,8 +12,9 @@ import {
 } from "@mui/material";
 import { Pie } from "@nivo/pie";
 import axios from "axios";
-import SalesIcon from "@mui/icons-material/AttachMoney";
-import ExpensesIcon from "@mui/icons-material/MoneyOff";
+import Icon from '@mdi/react';
+import { mdiCash } from '@mdi/js';
+import { mdiCashOff } from '@mdi/js';
 import PositiveIncomeIcon from "@mui/icons-material/TrendingUp";
 import NegativeIncomeIcon from "@mui/icons-material/TrendingDown";
 import config from "../../state/config";
@@ -192,7 +193,7 @@ const DailySummary = ({
           <Grid item xs={12}></Grid>
           <Grid item xs={12} sm={4}>
             <FinancialMetricBox
-              icon={<SalesIcon />}
+              icon={<Icon path={mdiCash} size={1} />}
               label="Sales"
               value={daySalesData}
               currency="PHP"
@@ -202,7 +203,7 @@ const DailySummary = ({
           </Grid>
           <Grid item xs={12} sm={4}>
             <FinancialMetricBox
-              icon={<ExpensesIcon />}
+              icon={<Icon path={mdiCashOff} size={1} />}
               label="Expenses"
               value={dayExpensesData}
               currency="PHP"
@@ -220,7 +221,7 @@ const DailySummary = ({
                 )
               }
               label={dayIncomeData < 0 ? "Net Loss" : "Net Income"}
-              value={dayIncomeData} // And here
+              value={Math.abs(dayIncomeData)}
               currency="PHP"
               backgroundColor={
                 dayIncomeData < 0

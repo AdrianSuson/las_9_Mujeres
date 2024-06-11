@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PropTypes from "prop-types";
 import {
   AppBar,
   Button,
@@ -17,7 +18,6 @@ import {
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import PropTypes from 'prop-types';
 import { logout } from "../state/logoutAction";
 import ChangeCredentials from "./acount";
 
@@ -71,9 +71,11 @@ const Navbar = ({ isSidebarOpen, setIsSidebarOpen, setUsername }) => {
     </AppBar>
   );
 };
+
 Navbar.propTypes = {
   isSidebarOpen: PropTypes.bool.isRequired,
   setIsSidebarOpen: PropTypes.func.isRequired,
-  setUsername: PropTypes.func,
+  setUsername: PropTypes.func.isRequired,
 };
+
 export default Navbar;

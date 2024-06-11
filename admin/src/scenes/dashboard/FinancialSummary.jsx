@@ -1,9 +1,10 @@
 import { Box, Typography, Grid, Avatar, useTheme } from "@mui/material";
-import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
-import MoneyOffIcon from "@mui/icons-material/MoneyOff";
+import Icon from '@mdi/react';
+import { mdiCash } from '@mdi/js';
+import { mdiCashOff } from '@mdi/js';
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 
 const FinancialMetricBox = ({
   icon,
@@ -27,47 +28,46 @@ const FinancialMetricBox = ({
           boxShadow: "0px 16px 32px rgba(0, 0, 0, 0.2)",
           transform: "translateY(-5px)",
         },
-        transition: theme.transitions.create("box-shadow"),
-        flexDirection: { xs: "column", sm: "row" }, // Stack the layout vertically on extra small devices
+        transition: theme.transitions.create(["box-shadow", "transform"], {
+          duration: theme.transitions.duration.standard,
+        }),
+        flexDirection: { xs: "column", sm: "row" },
         textAlign: { xs: "center", sm: "left" },
-        p: { xs: theme.spacing(1), sm: theme.spacing(2) }, // Smaller padding on smaller screens
+        p: { xs: theme.spacing(1), sm: theme.spacing(2) },
       }}
+      role="region"
+      aria-label={label}
     >
       <Avatar
         sx={{
           bgcolor: color,
           color: backgroundColor,
           marginRight: { sm: theme.spacing(2) },
-          marginBottom: { xs: theme.spacing(1), sm: 0 }, // Add margin bottom on small screens
+          marginBottom: { xs: theme.spacing(1), sm: 0 },
         }}
       >
         {icon}
       </Avatar>
-      <Typography variant="h6">{label}</Typography>
-      <Typography
-        variant="h6"
-        sx={{ marginLeft: { sm: "auto" }, mt: { xs: 1, sm: 0 } }}
-      >
-        {value.toLocaleString(undefined, { style: "currency", currency })}
-      </Typography>
+      <Box flex="1">
+        <Typography variant="h6">{label}</Typography>
+        <Typography variant="h6" sx={{ mt: { xs: 1, sm: 0 } }}>
+          {value.toLocaleString(undefined, { style: "currency", currency })}
+        </Typography>
+      </Box>
     </Box>
   );
 };
 
 FinancialMetricBox.propTypes = {
-  icon: PropTypes.node.isRequired, 
-  label: PropTypes.string.isRequired, 
-  value: PropTypes.number.isRequired, 
-  currency: PropTypes.string.isRequired, 
-  backgroundColor: PropTypes.string.isRequired, 
-  color: PropTypes.string.isRequired, 
+  icon: PropTypes.node.isRequired,
+  label: PropTypes.string.isRequired,
+  value: PropTypes.number.isRequired,
+  currency: PropTypes.string.isRequired,
+  backgroundColor: PropTypes.string.isRequired,
+  color: PropTypes.string.isRequired,
 };
 
-const FinancialSummary = ({
-  totalSales,
-  totalExpenses,
-  totalIncome,
-}) => {
+const FinancialSummary = ({ totalSales, totalExpenses, totalIncome }) => {
   const theme = useTheme();
 
   const incomeIcon =
@@ -78,7 +78,7 @@ const FinancialSummary = ({
     <Grid container spacing={2} sx={{ p: 4 }}>
       <Grid item xs={12} md={4}>
         <FinancialMetricBox
-          icon={<AttachMoneyIcon />}
+          icon={<Icon path={mdiCash} size={1} />}
           label="Sales"
           value={totalSales}
           currency="PHP"
@@ -88,7 +88,7 @@ const FinancialSummary = ({
       </Grid>
       <Grid item xs={12} md={4}>
         <FinancialMetricBox
-          icon={<MoneyOffIcon />}
+          icon={<Icon path={mdiCashOff} size={1} />}
           label="Expenses"
           value={totalExpenses}
           currency="PHP"
@@ -119,9 +119,9 @@ const FinancialSummary = ({
 };
 
 FinancialSummary.propTypes = {
-  totalSales: PropTypes.number.isRequired, 
-  totalExpenses: PropTypes.number.isRequired, 
-  totalIncome: PropTypes.number.isRequired, 
+  totalSales: PropTypes.number.isRequired,
+  totalExpenses: PropTypes.number.isRequired,
+  totalIncome: PropTypes.number.isRequired,
 };
 
 export default FinancialSummary;

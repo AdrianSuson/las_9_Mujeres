@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Box, useTheme, useMediaQuery } from "@mui/material";
+import { Box, useTheme, useMediaQuery, CircularProgress, Typography } from "@mui/material";
 import FlexBetween from "../../components/FlexBetween";
 import Header from "../../components/Header";
 import LineChart from "./LineChart";
@@ -9,7 +9,6 @@ import PieChartComponent from "./pieChart";
 import FinancialSummary from "./FinancialSummary";
 import config from "../../state/config";
 
-
 const Dashboard = () => {
   const theme = useTheme();
   const isNonMediumScreens = useMediaQuery("(min-width: 1200px)");
@@ -17,6 +16,8 @@ const Dashboard = () => {
   const [isLoadingEmployees, setIsLoadingEmployees] = useState(true);
   const [salesData, setSalesData] = useState([]);
   const [expensesData, setExpensesData] = useState([]);
+  const [isLoadingFinancial, setIsLoadingFinancial] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [selectedYear] = useState(new Date().getFullYear());
   const [selectedMonth] = useState(new Date().getMonth() + 1);
 
@@ -28,6 +29,7 @@ const Dashboard = () => {
         setIsLoadingEmployees(false);
       } catch (error) {
         console.error("Error fetching employee data:", error);
+        setFetchError("Failed to fetch employee data.");
         setIsLoadingEmployees(false);
       }
     };
@@ -43,8 +45,11 @@ const Dashboard = () => {
           `${config.API_URL}/expenses?year=${selectedYear}&month=${selectedMonth}`
         );
         setExpensesData(expensesResponse.data);
+        setIsLoadingFinancial(false);
       } catch (error) {
         console.error("Error fetching financial data:", error);
+        setFetchError("Failed to fetch financial data.");
+        setIsLoadingFinancial(false);
       }
     };
 
@@ -95,7 +100,7 @@ const Dashboard = () => {
     const dayIncomeData = Math.max(0, daySalesData - dayExpensesData);
 
     combinedChartData.push({
-      x: i, 
+      x: i,
       sales: daySalesData,
       expenses: dayExpensesData,
       income: dayIncomeData,
@@ -114,12 +119,12 @@ const Dashboard = () => {
 
   const totalIncome = totalSales - totalExpenses;
 
-
   return (
     <Box m="1.5rem 2.5rem">
       <FlexBetween>
         <Header title="DASHBOARD" subtitle="Welcome to your dashboard" />
       </FlexBetween>
+      {fetchError && <Typography variant="body1" color="error">{fetchError}</Typography>}
       <Box
         display="grid"
         gridTemplateColumns={isNonMediumScreens ? "repeat(12, 1fr)" : "1fr"}
@@ -128,49 +133,49 @@ const Dashboard = () => {
           "& > div": { gridColumn: isNonMediumScreens ? undefined : "span 12" },
         }}
       >
-        <Box
-          gridColumn={isNonMediumScreens ? "span 12" : "span 12"}
-          gridRow="span 3"
-        >
-          <LineChart data={combinedChartData} theme={theme} />
-          
-        </Box>
-          <Box
-            gridColumn={isNonMediumScreens ? "span 12" : "span 12"}
-            gridRow="span 3"
-          >
-            <FinancialSummary
-              selectedMonth={selectedMonth}
-              selectedYear={selectedYear}
-              totalSales={totalSales}
-              totalExpenses={totalExpenses}
-              totalIncome={totalIncome}
-              isNonMediumScreens={isNonMediumScreens}
+        {isLoadingFinancial ? (
+          <Box gridColumn="span 12" display="flex" justifyContent="center">
+            <CircularProgress />
+          </Box>
+        ) : (
+          <>
+            <Box gridColumn={isNonMediumScreens ? "span 12" : "span 12"} gridRow="span 3">
+              <LineChart data={combinedChartData} theme={theme} />
+            </Box>
+            <Box mt="3rem" gridColumn={isNonMediumScreens ? "span 12" : "span 12"} gridRow="span 3">
+              <FinancialSummary
+                selectedMonth={selectedMonth}
+                selectedYear={selectedYear}
+                totalSales={(totalSales)}
+                totalExpenses={(totalExpenses)}
+                totalIncome={(totalIncome)}
+                isNonMediumScreens={isNonMediumScreens}
+              />
+            </Box>
+            <Box gridColumn={isNonMediumScreens ? "span 6" : "span 12"} gridRow="span 3">
+              <PieChartComponent
+                pieChartData={[
+                  { name: "Sales", value: (totalSales) },
+                  { name: "Expenses", value: (totalExpenses) },
+                  { name: "Income", value: (totalIncome) },
+                ]}
+              />
+            </Box>
+          </>
+        )}
+        {isLoadingEmployees ? (
+          <Box gridColumn="span 12" display="flex" justifyContent="center">
+            <CircularProgress />
+          </Box>
+        ) : (
+          <Box gridColumn={isNonMediumScreens ? "span 6" : "span 12"} gridRow="span 6">
+            <EmployeeData
+              isLoadingEmployees={isLoadingEmployees}
+              employeeData={employeeData}
+              columns={columns}
             />
           </Box>
-
-        <Box
-          gridColumn={isNonMediumScreens ? "span 6" : "span 12"}
-          gridRow="span 3"
-        >
-          <PieChartComponent
-            pieChartData={[
-              { name: "Sales", value: totalSales },
-              { name: "Expenses", value: totalExpenses },
-              { name: "Income", value: totalIncome },
-            ]}
-          />
-        </Box>
-        <Box
-          gridColumn={isNonMediumScreens ? "span 6" : "span 12"}
-          gridRow="span 6"
-        >
-          <EmployeeData
-            isLoadingEmployees={isLoadingEmployees}
-            employeeData={employeeData}
-            columns={columns}
-          />
-        </Box>
+        )}
       </Box>
     </Box>
   );

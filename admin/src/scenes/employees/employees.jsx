@@ -87,13 +87,12 @@ const Employees = () => {
       renderCell: (params) => (
         <Button
           onClick={() => handleEmployeeUpdate(params.row.id)}
+          variant="contained"
+          color="primary"
           sx={{
-            color: theme.palette.primary[500],
-            background: theme.palette.secondary[500],
             transition: "transform 0.2s",
             "&:hover": {
-              color: theme.palette.secondary[600],
-              background: theme.palette.primary[600],
+              background: theme.palette.info.dark,
               transform: "scale(1.1)",
             },
           }}
@@ -110,13 +109,12 @@ const Employees = () => {
       renderCell: (params) => (
         <Button
           onClick={() => handleDelete(params.row.id)}
+          variant="contained"
+          color="secondary"
           sx={{
-            color: theme.palette.primary[500],
-            background: theme.palette.secondary[500],
             transition: "transform 0.2s",
             "&:hover": {
-              color: theme.palette.secondary[600],
-              background: theme.palette.primary[600],
+              background: theme.palette.error.dark,
               transform: "scale(1.1)",
             },
           }}
@@ -135,7 +133,17 @@ const Employees = () => {
       />
       <Button
         variant="contained"
-        sx={{ mt: "1rem", mr: ".5rem" }}
+        sx={{
+          mt: "1rem",
+          mr: ".5rem",
+          color: theme.palette.getContrastText(theme.palette.primary.main),
+          background: theme.palette.primary.main,
+          transition: "transform 0.2s",
+          "&:hover": {
+            background: theme.palette.primary.dark,
+            transform: "scale(1.1)",
+          },
+        }}
         startIcon={<PersonAddIcon />}
         onClick={handleOpenDialog}
       >
@@ -148,14 +156,14 @@ const Employees = () => {
           onClose={handleUpdateFormClose}
           employeeId={selectedEmployeeId}
           initialData={selectedEmployeeData}
-          fetchEmployees={fetchEmployees} // Passing fetchEmployees to refresh list
+          fetchEmployees={fetchEmployees}
         />
       )}
 
       <Box
         mt={2}
         height="75vh"
-        width="95%"
+        width="100%"
         sx={{
           background: "linear-gradient(135deg, #f5f7fa, #99c199)",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
@@ -194,6 +202,7 @@ const Employees = () => {
           sx={{
             display: "flex",
             justifyContent: "flex-end",
+            mb: 2,
           }}
         >
           <TextField
@@ -204,8 +213,9 @@ const Employees = () => {
             value={search}
             onChange={handleSearchChange}
             sx={{
-              mr: 2,
-              width: "300px",
+              width: isSmallScreen ? "100%" : "300px",
+              mr: isSmallScreen ? 0 : 2,
+              ml: isSmallScreen ? 0 : "auto",
             }}
             InputProps={{
               endAdornment: <SearchIcon />,
