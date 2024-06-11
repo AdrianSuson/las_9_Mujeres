@@ -20,7 +20,7 @@ const ChangeCredentials = ({ setUsername = () => {} }) => {
   const [message, setMessage] = useState("");
   const [updateUser] = useUpdateUserMutation();
 
-  const userId = 1; // Ideally this should be dynamically set based on the logged-in user's ID
+  const userId = 1; 
 
   const handleChangeCredentials = async () => {
     console.log("Attempting to update credentials");

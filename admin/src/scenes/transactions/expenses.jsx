@@ -13,14 +13,14 @@ const Expenses = () => {
   const [isExpensesVisible, setExpensesVisible] = useState(false);
   const theme = useTheme();
   const [expensesData, setExpensesData] = useState([]);
+  const reversedExpensesData = [...expensesData].reverse();
+
   const [isExpensesLoading, setIsExpensesLoading] = useState(false);
 
   const fetchData = async () => {
     try {
       setIsExpensesLoading(true);
-      const expensesResponse = await axios.get(
-        `${config.API_URL}/expenses`
-      );
+      const expensesResponse = await axios.get(`${config.API_URL}/expenses`);
       setExpensesData(expensesResponse.data);
     } catch (error) {
       console.error("Error fetching expenses data:", error);
@@ -218,9 +218,8 @@ const Expenses = () => {
         </Box>
         <DataGrid
           loading={isExpensesLoading}
-          rows={expensesData || []}
+          rows={reversedExpensesData || []}
           columns={expensesColumns}
-          autoHeight
           components={{
             Toolbar: DataGridCustomToolbar,
           }}

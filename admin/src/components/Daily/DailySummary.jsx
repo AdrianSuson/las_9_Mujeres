@@ -1,6 +1,8 @@
 import { Grid } from '@mui/material';
 import FinancialMetricBox from './FinancialMetricBox';
-import SalesIcon from "@mui/icons-material/TrendingUp";
+import Icon from '@mdi/react';
+import { mdiCash } from '@mdi/js';
+import { mdiCashOff } from '@mdi/js';
 import ExpensesIcon from "@mui/icons-material/TrendingDown";
 import PropTypes from 'prop-types';
 import IncomeIcon from "@mui/icons-material/MonetizationOn";
@@ -16,7 +18,7 @@ const FinancialSummary = ({ daySalesData, dayExpensesData, dayIncomeData }) => {
       </Grid>
       <Grid item xs={12} sm={4}>
         <FinancialMetricBox
-          icon={<SalesIcon />}
+          icon={<Icon path={mdiCash} size={1} />}
           label="Sales"
           value={daySalesData}
           currency="PHP"
@@ -26,7 +28,7 @@ const FinancialSummary = ({ daySalesData, dayExpensesData, dayIncomeData }) => {
       </Grid>
       <Grid item xs={12} sm={4}>
         <FinancialMetricBox
-          icon={<ExpensesIcon />}
+          icon={<Icon path={mdiCashOff} size={1} />}
           label="Expenses"
           value={dayExpensesData}
           currency="PHP"

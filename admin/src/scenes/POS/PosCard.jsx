@@ -31,7 +31,7 @@ const Item = ({ item, addToCart, cart }) => {
           {item.name}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Price: ${item.price}
+          Price: ₱{item.price}
         </Typography>
         <Typography variant="body2" color="text.secondary">
           Amount: {item.amount}

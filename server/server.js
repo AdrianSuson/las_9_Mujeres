@@ -46,20 +46,7 @@ async function initializeApp() {
   const adminPassword = process.env.USER_PASSWORD;
 
   try {
-    // Create a connection just for creating the database
-    const initialDbConnection = await mysql.createConnection({
-      host: process.env.HOST,
-      user: process.env.USER,
-      password: process.env.PASSWORD,
-    });
-
-    await initialDbConnection.query(
-      `CREATE DATABASE IF NOT EXISTS financialmanagement`
-    );
-    console.log("Database created or already exists.");
-    await initialDbConnection.end();
-
-    // Create a new connection or pool to the specific database for table creation and operations
+    // Create a new connection or pool to the specific database for operations
     const db = await mysql.createPool({
       host: process.env.HOST,
       user: process.env.USER,
@@ -69,48 +56,6 @@ async function initializeApp() {
       connectionLimit: 10,
       queueLimit: 0,
     });
-
-    // Create tables if they don't exist
-    await Promise.all([
-      db.query(`CREATE TABLE IF NOT EXISTS users (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        username VARCHAR(255) NOT NULL UNIQUE,
-        password VARCHAR(255) NOT NULL
-      );`),
-      db.query(`CREATE TABLE IF NOT EXISTS sales (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        transaction_name VARCHAR(255) NOT NULL,
-        sales_name VARCHAR(255) NOT NULL, 
-        amount DECIMAL(10, 2) NOT NULL,
-        price DECIMAL(10, 2) NOT NULL,
-        transaction_date DATE NOT NULL,
-        total_sales DECIMAL(10, 2) NOT NULL 
-      )`),
-      db.query(`CREATE TABLE IF NOT EXISTS expenses (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        transaction_name VARCHAR(255) NOT NULL,
-        expense_name VARCHAR(255) NOT NULL,
-        amount DECIMAL(10, 2) NOT NULL,
-        price DECIMAL(10, 2) NOT NULL,
-        transaction_date DATE NOT NULL,
-        total_expenses DECIMAL(10, 2) NOT NULL
-      )`),
-      db.query(`CREATE TABLE IF NOT EXISTS employees (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        firstName VARCHAR(255) NOT NULL,
-        lastName VARCHAR(255) NOT NULL,
-        position VARCHAR(255) NOT NULL,
-        phoneNumber VARCHAR(20) NOT NULL
-      )`),
-      db.query(`CREATE TABLE IF NOT EXISTS items (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        amount INT NOT NULL,
-        price INT NOT NULL,
-        image VARCHAR(255) NOT NULL
-      )`),
-    ]);
-    console.log("Tables created or already exist.");
 
     // Check if the admin user exists and create one if not
     const [users] = await db.query("SELECT * FROM users");

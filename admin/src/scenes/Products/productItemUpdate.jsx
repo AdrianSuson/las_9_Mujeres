@@ -95,7 +95,7 @@ const ItemUpdate = ({ open, onClose, itemData }) => {
                 />
               </Box>
               <DialogActions>
-                <Button onClick={onClose} variant="outlined" color="secondary">
+                <Button onClick={onClose} variant="contained" color="secondary">
                   Cancel
                 </Button>
                 <Button

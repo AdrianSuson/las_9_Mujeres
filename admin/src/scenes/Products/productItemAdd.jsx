@@ -1,3 +1,4 @@
+import axios from "axios";
 import {
   Box,
   Button,
@@ -6,22 +7,28 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import { Formik } from "formik";
+import * as Yup from "yup";
 import { useDropzone } from "react-dropzone";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import config from "../../state/config";
 import PropTypes from 'prop-types';
 
+// Validation schema
+const validationSchema = Yup.object({
+  name: Yup.string().required("Required"),
+  amount: Yup.number().min(1, "Must be at least 1").required("Required"),
+  price: Yup.number().min(0.01, "Must be at least 0.01").required("Required"),
+});
 
-// Create a separate component for the form to utilize useDropzone
-const FormContent = ({ setFieldValue, values, handleChange }) => {
+const FormContent = ({ setFieldValue, values, handleChange, errors, touched }) => {
   const { getRootProps, getInputProps } = useDropzone({
     accept: "image/*",
     onDrop: (acceptedFiles) => {
-      // Assuming you only need the first file
-      const file = acceptedFiles[0];
-      setFieldValue("image", file);
+      setFieldValue("image", acceptedFiles[0]);
     },
   });
 
@@ -34,6 +41,8 @@ const FormContent = ({ setFieldValue, values, handleChange }) => {
         name="name"
         value={values.name}
         onChange={handleChange}
+        error={touched.name && Boolean(errors.name)}
+        helperText={touched.name && errors.name}
       />
       <TextField
         fullWidth
@@ -43,6 +52,8 @@ const FormContent = ({ setFieldValue, values, handleChange }) => {
         type="number"
         value={values.amount}
         onChange={handleChange}
+        error={touched.amount && Boolean(errors.amount)}
+        helperText={touched.amount && errors.amount}
       />
       <TextField
         fullWidth
@@ -52,15 +63,10 @@ const FormContent = ({ setFieldValue, values, handleChange }) => {
         type="number"
         value={values.price}
         onChange={handleChange}
+        error={touched.price && Boolean(errors.price)}
+        helperText={touched.price && errors.price}
       />
-      <div
-        {...getRootProps({ className: "dropzone" })}
-        style={{
-          cursor: "pointer",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
+      <div {...getRootProps({ className: "dropzone" })} style={{ cursor: "pointer", display: "flex", flexDirection: "column" }}>
         <input {...getInputProps()} />
         <TextField
           fullWidth
@@ -78,7 +84,6 @@ const FormContent = ({ setFieldValue, values, handleChange }) => {
 };
 
 const ItemAdd = ({ onClose }) => {
-
   return (
     <Dialog open={true} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>Add New Item</DialogTitle>
@@ -90,7 +95,8 @@ const ItemAdd = ({ onClose }) => {
             price: "",
             image: null,
           }}
-          onSubmit={async (values, { setSubmitting }) => {
+          validationSchema={validationSchema}
+          onSubmit={(values, { setSubmitting, setErrors }) => {
             const formData = new FormData();
             formData.append("name", values.name);
             formData.append("amount", values.amount);
@@ -99,33 +105,35 @@ const ItemAdd = ({ onClose }) => {
               formData.append("image", values.image);
             }
 
-            try {
-              await fetch(`${config.API_URL}/items`, {
-                method: "POST",
-                body: formData,
-              });
-              window.location.reload(false);
-              onClose();
-            } catch (error) {
-              console.error("Error creating item:", error);
-            } finally {
-              setSubmitting(false);
-            }
+            setSubmitting(true);
+            axios.post(`${config.API_URL}/items`, formData)
+              .then(() => {
+                onClose();
+                window.location.reload(false);
+              })
+              .catch(error => {
+                console.error("Error creating item:", error);
+                setErrors({ submit: "Error creating item. Please try again." });
+              })
+              .finally(() => setSubmitting(false));
           }}
         >
-          {({ values, handleChange, handleSubmit, setFieldValue }) => (
+          {({ values, handleChange, handleSubmit, setFieldValue, isSubmitting, errors, touched }) => (
             <form onSubmit={handleSubmit}>
               <FormContent
                 setFieldValue={setFieldValue}
                 values={values}
                 handleChange={handleChange}
+                errors={errors}
+                touched={touched}
               />
+              {errors.submit && <Alert severity="error">{errors.submit}</Alert>}
               <DialogActions>
-                <Button onClick={onClose} color="primary" variant="outlined">
+                <Button onClick={onClose} color="secondary" variant="contained">
                   Cancel
                 </Button>
-                <Button type="submit" variant="contained" color="primary">
-                  <AddCircleOutlineIcon sx={{ mr: 1 }} />
+                <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}>
+                  {isSubmitting ? <CircularProgress size={24} /> : <AddCircleOutlineIcon sx={{ mr: 1 }} />}
                   Add Item
                 </Button>
               </DialogActions>
@@ -136,12 +144,17 @@ const ItemAdd = ({ onClose }) => {
     </Dialog>
   );
 };
+
 FormContent.propTypes = {
-  setFieldValue: PropTypes.func.isRequired, 
-  values: PropTypes.object.isRequired, 
+  setFieldValue: PropTypes.func.isRequired,
+  values: PropTypes.object.isRequired,
   handleChange: PropTypes.func.isRequired,
+  errors: PropTypes.object.isRequired,
+  touched: PropTypes.object.isRequired,
 };
+
 ItemAdd.propTypes = {
-  onClose: PropTypes.func.isRequired, 
+  onClose: PropTypes.func.isRequired,
 };
+
 export default ItemAdd;

@@ -1,7 +1,9 @@
 // src/components/MonthlySummary.jsx
 import { Grid, useTheme } from '@mui/material';
 import FinancialMetricBox from './FinancialMetricBox';
-import SalesIcon from '@mui/icons-material/TrendingUp';
+import Icon from '@mdi/react';
+import { mdiCash } from '@mdi/js';
+import { mdiCashOff } from '@mdi/js';
 import ExpensesIcon from '@mui/icons-material/TrendingDown';
 import IncomeIcon from '@mui/icons-material/MonetizationOn';
 import PropTypes from 'prop-types';
@@ -24,7 +26,7 @@ const MonthlySummary = ({
       </Grid>
       <Grid item xs={12} sm={4}>
         <FinancialMetricBox
-          icon={<SalesIcon />}
+          icon={<Icon path={mdiCash} size={1} />}
           label="Sales"
           value={totalSales}
           currency="PHP"
@@ -34,7 +36,7 @@ const MonthlySummary = ({
       </Grid>
       <Grid item xs={12} sm={4}>
         <FinancialMetricBox
-          icon={<ExpensesIcon />}
+          icon={<Icon path={mdiCashOff} size={1} />}
           label="Expenses"
           value={totalExpenses}
           currency="PHP"
@@ -46,7 +48,7 @@ const MonthlySummary = ({
         <FinancialMetricBox
           icon={incomeIcon}
           label={incomeLabel}
-          value={totalIncome}
+          value={Math.abs(totalIncome)} 
           currency="PHP"
           backgroundColor={incomeBackgroundColor}
           color={theme.palette.info.contrastText}

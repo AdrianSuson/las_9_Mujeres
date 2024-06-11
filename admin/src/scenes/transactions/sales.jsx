@@ -13,6 +13,7 @@ const Sales = () => {
   const [isSalesVisible, setSalesVisible] = useState(false);
   const theme = useTheme();
   const [salesData, setSalesData] = useState([]);
+  const reversedSalesData = [...salesData].reverse();
   const [isSalesLoading, setIsSalesLoading] = useState(false);
 
   const fetchData = async () => {
@@ -216,9 +217,8 @@ const Sales = () => {
         </Box>
         <DataGrid
           loading={isSalesLoading}
-          rows={salesData || []}
+          rows={reversedSalesData || []}
           columns={salesColumns}
-          autoHeight
           components={{
             Toolbar: DataGridCustomToolbar,
           }}

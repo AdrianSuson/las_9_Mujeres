@@ -21,8 +21,8 @@ const Header = ({ title, subtitle }) => {
 };
 
 Header.propTypes = {
-  title: PropTypes.string.isRequired, // Ensure that 'title' is a required string
-  subtitle: PropTypes.string.isRequired // Ensure that 'subtitle' is a required string
+  title: PropTypes.string.isRequired, 
+  subtitle: PropTypes.string.isRequired
 };
 
 export default Header;

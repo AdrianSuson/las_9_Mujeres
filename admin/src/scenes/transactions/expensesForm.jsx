@@ -5,10 +5,10 @@ import {
   TextField,
   Typography,
   useMediaQuery,
-  useTheme,
   Dialog,
   DialogContent,
   DialogTitle,
+  InputAdornment,
 } from "@mui/material";
 import PropTypes from 'prop-types';
 import AddShoppingCartOutlinedIcon from "@mui/icons-material/AddShoppingCartOutlined";
@@ -21,12 +21,11 @@ import config from "../../state/config";
 
 const Expenses = ({ onClose }) => {
   const isNonMobile = useMediaQuery("(min-width:600px)");
-  const [value1, setValue1] = useState(); // Initialize values with 0
-  const [value2, setValue2] = useState();
+  const [value1, setValue1] = useState(0);
+  const [value2, setValue2] = useState(0);
   const [total, setTotal] = useState(0);
-  const theme = useTheme();
 
-  const handleValueChange = (event, setFieldValue, fieldName, otherValue) => {
+  const handleValueChange = (event, setFieldValue, fieldName,) => {
     const newValue = parseFloat(event.target.value) || 0;
     setFieldValue(fieldName, newValue);
 
@@ -36,14 +35,13 @@ const Expenses = ({ onClose }) => {
       setValue2(newValue);
     }
 
-    const newTotal = newValue * otherValue;
+    const newTotal = fieldName === "amount" ? newValue * value2 : newValue * value1;
     setTotal(newTotal);
     setFieldValue("total_expenses", newTotal);
   };
 
   const handleFormSubmit = async (values) => {
     try {
-      // Make a POST request to your backend endpoint
       await fetch(`${config.API_URL}/expenses`, {
         method: "POST",
         headers: {
@@ -69,7 +67,7 @@ const Expenses = ({ onClose }) => {
   };
 
   return (
-    <Dialog open={true} onClose={onClose}>
+    <Dialog open={true} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
         <Header title="EXPENSES" subtitle="Insert Expenses" />
       </DialogTitle>
@@ -87,9 +85,9 @@ const Expenses = ({ onClose }) => {
             <form onSubmit={handleSubmit}>
               <Box
                 display="grid"
-                gap="30px"
+                gap="20px"
                 mt="1rem"
-                gridTemplateColumns="repeat(4, minmax(0, 1fr))"
+                gridTemplateColumns="repeat(4, 1fr)"
                 sx={{
                   "& > div": {
                     gridColumn: isNonMobile ? undefined : "span 4",
@@ -102,15 +100,19 @@ const Expenses = ({ onClose }) => {
                   label="Item Name"
                   onBlur={handleBlur}
                   onChange={handleChange}
-                  value={values.expense_type}
+                  value={values.expense_name}
                   name="expense_name"
                   sx={{ gridColumn: "span 2" }}
                   InputProps={{
-                    startAdornment: <AddShoppingCartOutlinedIcon />,
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <AddShoppingCartOutlinedIcon />
+                      </InputAdornment>
+                    ),
                   }}
                   required
-                  error={touched.expense_type && !!errors.expense_type}
-                  helperText={touched.expense_type && errors.expense_type}
+                  error={touched.expense_name && !!errors.expense_name}
+                  helperText={touched.expense_name && errors.expense_name}
                 />
                 <TextField
                   variant="outlined"
@@ -124,7 +126,11 @@ const Expenses = ({ onClose }) => {
                   name="amount"
                   sx={{ gridColumn: "span 2" }}
                   InputProps={{
-                    startAdornment: <CalculateOutlinedIcon />,
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <CalculateOutlinedIcon />
+                      </InputAdornment>
+                    ),
                   }}
                   required
                   error={touched.amount && !!errors.amount}
@@ -142,7 +148,11 @@ const Expenses = ({ onClose }) => {
                   name="price"
                   sx={{ gridColumn: "span 2" }}
                   InputProps={{
-                    startAdornment: "₱",
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        ₱
+                      </InputAdornment>
+                    ),
                   }}
                   required
                   error={touched.price && !!errors.price}
@@ -158,7 +168,11 @@ const Expenses = ({ onClose }) => {
                   name="transaction_date"
                   sx={{ gridColumn: "span 2" }}
                   InputProps={{
-                    startAdornment: <CalendarMonthOutlinedIcon />,
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <CalendarMonthOutlinedIcon />
+                      </InputAdornment>
+                    ),
                   }}
                   required
                   error={touched.transaction_date && !!errors.transaction_date}
@@ -166,26 +180,25 @@ const Expenses = ({ onClose }) => {
                     touched.transaction_date && errors.transaction_date
                   }
                   inputProps={{
-                    min: new Date().toISOString().split("T")[0], // Set min date to today
+                    min: new Date().toISOString().split("T")[0],
                   }}
                 />
               </Box>
               <Typography
-                sx={{ gridColumn: "span 2", m: "1.5rem" }}
-                variant="h3"
+                sx={{ gridColumn: "span 4", m: "1.5rem 0", textAlign: 'center' }}
+                variant="h5"
               >
-                Total: {total}
+                Total: ₱{total}
               </Typography>
-              <Box display="flex" justifyContent="end" mt="20px">
+              <Box display="flex" justifyContent="center" mt="20px">
                 <Button
                   type="submit"
                   variant="contained"
+                  color="primary"
                   sx={{
                     m: "1rem",
-                    color: theme.palette.primary[400],
-                    background: theme.palette.secondary[400],
                     "&:hover": {
-                      transform: "scale(1.1)",
+                      transform: "scale(1.05)",
                     },
                   }}
                 >
@@ -200,7 +213,9 @@ const Expenses = ({ onClose }) => {
     </Dialog>
   );
 };
+
 Expenses.propTypes = {
-  onClose: PropTypes.func.isRequired
+  onClose: PropTypes.func.isRequired,
 };
+
 export default Expenses;

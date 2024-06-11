@@ -10,6 +10,7 @@ import config from "../../state/config";
 const Transactions = () => {
   const theme = useTheme();
   const [incomeData, setIncomeData] = useState([]);
+  const reversedIncomeData = [...incomeData].reverse();
   const [isIncomeLoading, setIsIncomeLoading] = useState(false);
 
   const fetchData = async () => {
@@ -210,7 +211,7 @@ const Transactions = () => {
 
         <DataGrid
           loading={isIncomeLoading}
-          rows={incomeData || []}
+          rows={reversedIncomeData || []}
           columns={incomeColumns}
           autoHeight
           components={{

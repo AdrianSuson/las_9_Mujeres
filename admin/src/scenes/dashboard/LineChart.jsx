@@ -5,21 +5,24 @@ import {
   Box,
   Checkbox,
   FormControlLabel,
+  CircularProgress,
   Typography,
   useTheme,
 } from "@mui/material";
-import PropTypes from 'prop-types';
-
+import PropTypes from "prop-types";
+import config from "../../state/config";
 
 const DailyChartComponent = ({
   combinedChartData,
   selectedYear,
   selectedMonth,
+  isLoading,
 }) => {
   const theme = useTheme();
   const isNoData = !combinedChartData.some(
     (data) => data.sales > 0 || data.expenses > 0 || data.income > 0
   );
+
   // State to manage visibility of each line
   const [visibility, setVisibility] = useState({
     Sales: true,
@@ -63,7 +66,7 @@ const DailyChartComponent = ({
   return (
     <Box
       mt={4}
-      height="300px"
+      height="400px"
       borderRadius={3}
       sx={{
         boxShadow: "0px 12px 24px rgba(0, 0, 0, 0.12)",
@@ -76,7 +79,33 @@ const DailyChartComponent = ({
         },
       }}
     >
-      {!isNoData ? (
+      {isLoading ? (
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          height="100%"
+        >
+          <CircularProgress />
+        </Box>
+      ) : isNoData ? (
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          height="100%"
+        >
+          <Typography
+            variant="subtitle1"
+            align="center"
+            color="textSecondary"
+            style={{ fontSize: "20px", color: theme.palette.primary.main }}
+          >
+            No financial data available for {selectedMonth} - {selectedYear}.
+          </Typography>
+        </Box>
+      ) : (
         <ResponsiveLine
           data={nivoChartData}
           margin={{ top: 50, right: 160, bottom: 90, left: 60 }}
@@ -139,22 +168,13 @@ const DailyChartComponent = ({
             },
           ]}
         />
-      ) : (
-        <Typography
-          variant="subtitle1"
-          align="center"
-          color="textSecondary"
-          style={{ fontSize: "20px", color: theme.palette.secondary.main }}
-        >
-          No financial data available for {selectedMonth} - {selectedYear}.
-        </Typography>
       )}
       <Box
         sx={{
           display: "flex",
-          flexDirection: "row",
           justifyContent: "center",
           alignItems: "center",
+          mt: 2,
         }}
       >
         {["Sales", "Expenses", "Income"].map((line) => (
@@ -168,6 +188,7 @@ const DailyChartComponent = ({
               />
             }
             label={line}
+            sx={{ margin: 1 }}
           />
         ))}
       </Box>
@@ -180,32 +201,30 @@ const DailyChart = () => {
   const [expensesData, setExpensesData] = useState([]);
   const [selectedYear] = useState(new Date().getFullYear());
   const [selectedMonth] = useState(new Date().getMonth() + 1);
-
+  const [isLoading, setIsLoading] = useState(true);
   const [combinedChartData, setCombinedChartData] = useState([]);
-  const [daySalesData, setDaySalesData] = useState(0);
-  const [dayExpensesData, setDayExpensesData] = useState(0);
-  const [dayIncomeData, setDayIncomeData] = useState(0);
 
   useEffect(() => {
-    axios
-      .get(
-        `http://localhost:5001/sales?year=${selectedYear}&month=${selectedMonth}`
-      )
-      .then((response) => {
-        console.log("Sales Data:", response.data);
-        setSalesData(response.data);
-      })
-      .catch((error) => console.error("Error fetching sales data:", error));
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const salesResponse = await axios.get(
+          `${config.API_URL}/sales?year=${selectedYear}&month=${selectedMonth}`
+        );
+        const expensesResponse = await axios.get(
+          `${config.API_URL}/expenses?year=${selectedYear}&month=${selectedMonth}`
+        );
 
-    axios
-      .get(
-        `http://localhost:5001/expenses?year=${selectedYear}&month=${selectedMonth}`
-      )
-      .then((response) => {
-        console.log("Expenses Data:", response.data);
-        setExpensesData(response.data);
-      })
-      .catch((error) => console.error("Error fetching expenses data:", error));
+        setSalesData(salesResponse.data);
+        setExpensesData(expensesResponse.data);
+      } catch (error) {
+        console.error("Error fetching financial data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, [selectedYear, selectedMonth]);
 
   useEffect(() => {
@@ -241,28 +260,6 @@ const DailyChart = () => {
     }
 
     setCombinedChartData(combinedData);
-
-    const totalSales = salesData.reduce(
-      (total, entry) =>
-        new Date(entry.transaction_date).getMonth() === selectedMonth - 1 &&
-        new Date(entry.transaction_date).getFullYear() === selectedYear
-          ? total + (entry.total_sales || 0)
-          : total,
-      0
-    );
-    const totalExpenses = expensesData.reduce(
-      (total, entry) =>
-        new Date(entry.transaction_date).getMonth() === selectedMonth - 1 &&
-        new Date(entry.transaction_date).getFullYear() === selectedYear
-          ? total + (entry.total_expenses || 0)
-          : total,
-      0
-    );
-    const totalIncome = Math.max(0, totalSales - totalExpenses);
-
-    setDaySalesData(totalSales);
-    setDayExpensesData(totalExpenses);
-    setDayIncomeData(totalIncome);
   }, [salesData, expensesData, selectedYear, selectedMonth]);
 
   return (
@@ -271,9 +268,7 @@ const DailyChart = () => {
         combinedChartData={combinedChartData}
         selectedYear={selectedYear}
         selectedMonth={selectedMonth}
-        daySalesData={daySalesData}
-        dayExpensesData={dayExpensesData}
-        dayIncomeData={dayIncomeData}
+        isLoading={isLoading}
       />
     </Box>
   );
@@ -290,11 +285,7 @@ DailyChartComponent.propTypes = {
   ).isRequired,
   selectedYear: PropTypes.number.isRequired,
   selectedMonth: PropTypes.number.isRequired,
-  daySalesData: PropTypes.number.isRequired,
-  dayExpensesData: PropTypes.number.isRequired,
-  dayIncomeData: PropTypes.number.isRequired,
-  isNonMediumScreens: PropTypes.bool,
+  isLoading: PropTypes.bool.isRequired,
 };
-
 
 export default DailyChart;

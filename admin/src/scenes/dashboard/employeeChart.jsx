@@ -1,10 +1,10 @@
-import { Box,  useTheme } from "@mui/material";
+import { Box, CircularProgress, Typography, useTheme } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import PropTypes from "prop-types";
 
 const EmployeeData = ({ isLoadingEmployees, employeeData, columns }) => {
-
   const theme = useTheme();
+
   return (
     <Box
       gridColumn="span 6"
@@ -14,12 +14,12 @@ const EmployeeData = ({ isLoadingEmployees, employeeData, columns }) => {
         borderRadius: "16px",
         overflow: "hidden",
         transition: "all 0.3s ease",
-        background: "linear-gradient(135deg, #f5f7fa, #99c199)", 
+        background: "linear-gradient(135deg, #f5f7fa, #99c199)",
         "&:hover": {
           boxShadow: "0px 16px 32px rgba(0, 0, 0, 0.2)",
           transform: "translateY(-5px)",
         },
-        height:"400px",
+        height: "400px",
         "& .MuiDataGrid-root": {
           border: "none",
           borderRadius: "5rem",
@@ -44,26 +44,52 @@ const EmployeeData = ({ isLoadingEmployees, employeeData, columns }) => {
         "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
           color: theme.palette.primary[600],
         },
-        "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows, & .MuiTablePagination-select, & .MuiTablePagination-selectIcon":
-          {
-            color: theme.palette.secondary[100],
-          },
+        "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows, & .MuiTablePagination-select, & .MuiTablePagination-selectIcon": {
+          color: theme.palette.secondary[100],
+        },
       }}
     >
-      <DataGrid
-        loading={isLoadingEmployees}
-        getRowId={(row) => row.id}
-        rows={employeeData}
-        columns={columns}
-      />
+      {isLoadingEmployees ? (
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          height="100%"
+        >
+          <CircularProgress />
+        </Box>
+      ) : employeeData.length === 0 ? (
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          height="100%"
+        >
+          <Typography variant="h6" color="textSecondary">
+            No employees to display
+          </Typography>
+        </Box>
+      ) : (
+        <DataGrid
+          getRowId={(row) => row.id}
+          rows={employeeData}
+          columns={columns}
+          disableSelectionOnClick
+          sx={{
+            "& .MuiDataGrid-cell": {
+              color: theme.palette.text.primary,
+            },
+          }}
+        />
+      )}
     </Box>
   );
 };
+
 EmployeeData.propTypes = {
   isLoadingEmployees: PropTypes.bool.isRequired,
   employeeData: PropTypes.arrayOf(PropTypes.object).isRequired,
   columns: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
-
 
 export default EmployeeData;

@@ -1,20 +1,20 @@
 import { useState, useEffect } from "react";
-import { Box, Button, TextField, Grid,} from "@mui/material";
+import axios from "axios";
+import { Box, Button, TextField, Grid, CircularProgress, Snackbar, Alert, Typography } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import Item from "../../scenes/Products/item";
 import ItemAddDialog from "./productItemAdd"; 
-import axios from 'axios';
 import Header from "../../components/Header";
 
-const Items = () => {
-  const [items, setItems] = useState([]); // Store items state
+const Products = () => {
+  const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
 
-  // Define the function to fetch items
   const fetchItems = async () => {
     setIsLoading(true);
     setIsError(false);
@@ -24,23 +24,18 @@ const Items = () => {
     } catch (error) {
       setIsError(true);
       console.error("Failed to fetch items:", error);
+      setSnackbar({ open: true, message: 'Failed to fetch items', severity: 'error' });
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Fetch items on component mount
   useEffect(() => {
     fetchItems();
   }, []);
 
   const handleOpenAddDialog = () => setIsAddDialogOpen(true);
   const handleCloseAddDialog = () => setIsAddDialogOpen(false);
-
-  const addToCart = (item) => {
-    console.log("Add to cart:", item);
-    // Implement your add to cart logic here
-  };
 
   const filteredItems = items.filter((item) =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -68,20 +63,27 @@ const Items = () => {
       />
       <Grid container spacing={2}>
         {isLoading ? (
-          <div>Loading...</div>
+          <Box display="flex" justifyContent="center" width="100%">
+            <CircularProgress />
+          </Box>
         ) : isError ? (
-          <div>Error fetching items.</div>
+          <Box display="flex" justifyContent="center" width="100%">
+            <Typography color="error">Error fetching items.</Typography>
+          </Box>
         ) : (
           filteredItems.map((item) => (
-            <Grid item xs={12} sm={6} md={2.4} key={item.id}>
-              <Item item={item} addToCart={addToCart} />
-            </Grid>
+            <Item key={item.id} item={item} fetchItems={fetchItems} />
           ))
         )}
       </Grid>
-      {isAddDialogOpen && <ItemAddDialog onClose={handleCloseAddDialog} />}
+      {isAddDialogOpen && <ItemAddDialog onClose={handleCloseAddDialog} fetchItems={fetchItems} />}
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
 
-export default Items;
+export default Products;
